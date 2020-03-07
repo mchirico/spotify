@@ -1,0 +1,93 @@
+name: Basic Build
+
+on: [push]
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    # Setup gcloud CLI
+    - uses: mchirico/gcp-actions@v1
+      with:
+        version: 'latest'
+        service_account_key: ${{ secrets.OWNER }}
+
+    # Configure docker to use the gcloud command-line tool as a credential helper
+    - run: |
+        # Set up docker to authenticate
+        # via gcloud command-line tool.
+        gcloud auth configure-docker
+        gcloud components update --quiet
+
+
+    - name: Install ChromeDriver
+      run: |
+        CHROME_VERSION=$(google-chrome --version | cut -f 3 -d ' ' | cut -d '.' -f 1) \
+          && CHROMEDRIVER_RELEASE=$(curl --location --fail --retry 3 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}) \
+          && curl --silent --show-error --location --fail --retry 3 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_RELEASE/chromedriver_linux64.zip" \
+          && cd /tmp \
+          && unzip chromedriver_linux64.zip \
+          && rm -rf chromedriver_linux64.zip \
+          && sudo mv chromedriver /usr/local/bin/chromedriver \
+          && sudo chmod +x /usr/local/bin/chromedriver \
+          && chromedriver --version
+
+
+    # ng command for Angular
+    - run: |
+         npm install -g @angular/cli
+
+
+
+    # Install
+    - run: |
+         cd spotify-app
+         npm install
+         npm run test -- --no-watch --code-coverage --no-progress --browsers=ChromeHeadlessCI
+         npm run coverage
+      env:
+        CI: true
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
+    # Node Make
+    - run: |
+        echo "Node Project Make"
+        cd node
+        make
+
+
+    # Node Coverage
+    - run: |
+        echo "Node Project coverage"
+        cd node
+        npm install
+        npm run coverage
+      env:
+        CI: true
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
+    # BigQuery
+    - name: Working with BigQuery
+      run: |
+       txt="Testing pull request only"
+       bq query --nouse_legacy_sql 'CREATE TABLE IF NOT EXISTS  `cwxstat-23.github.log` (msg string, timeEnter timestamp);'
+       bq query --nouse_legacy_sql  --parameter=MSG:STRING:"${txt}"  'insert into `cwxstat-23.github.log` (msg,timeEnter) values (@MSG,CURRENT_TIMESTAMP())'
+
+
+
+
