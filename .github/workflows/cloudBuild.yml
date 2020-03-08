@@ -1,6 +1,10 @@
-name: Basic Build
+name: Cloud Build
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+      - c
 
 
 jobs:
@@ -51,7 +55,6 @@ jobs:
          npm install -g @angular/cli
 
 
-
     # Angular install and test
     - run: |
          cd spotify-app
@@ -92,10 +95,24 @@ jobs:
        curl localhost:3000|grep 'SpotifyApp'
 
 
+    # Cloud
+    - name: Gcloud Build
+      run: |
+        gcloud config set gcloudignore/enabled false --project spotifypig
+        cd spotify-app
+        yes no|ng build --outputPath=../node/dist --prod  --outputHashing=all
+        # Must be in directory with Dockerfile
+        cd ../node
+        gcloud builds submit --tag gcr.io/spotifypig/spotifycloud --project spotifypig --timeout 35m23s
+        gcloud run deploy spotifycloud --image gcr.io/spotifypig/spotifycloud \
+              --platform managed --allow-unauthenticated --project spotifypig \
+              --region us-east1 --port 3000 --max-instances 3  --memory 128Mi
+
+
     # BigQuery
     - name: Working with BigQuery
       run: |
-       txt="Testing pull request only"
+       txt="Cloud build... spotify.cwxstat.com"
        bq query --nouse_legacy_sql 'CREATE TABLE IF NOT EXISTS  `spotifypig.github.log` (msg string, timeEnter timestamp);'
        bq query --nouse_legacy_sql  --parameter=MSG:STRING:"${txt}"  'insert into `spotifypig.github.log` (msg,timeEnter) values (@MSG,CURRENT_TIMESTAMP())'
 
