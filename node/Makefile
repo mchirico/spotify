@@ -1,4 +1,4 @@
-PROJECT = cwxstat-23
+PROJECT = spotifypig
 NAME = spotify
 TAG = latest
 
