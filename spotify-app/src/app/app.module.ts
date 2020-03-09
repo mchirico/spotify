@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import {HttpClientModule, HttpClientXsrfModule} from '@angular/common/http';
 
 import {AppRoutingModule} from './app.routing';
 import { AppComponent } from './app.component';
@@ -27,6 +28,11 @@ import { HomeComponent } from './navpages/home/home.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    HttpClientModule,
+    HttpClientXsrfModule.withOptions({
+      cookieName: 'XSRF-TOKEN',
+      headerName: 'X-CSRF-Token',
+    }),
   ],
   providers: [],
   bootstrap: [AppComponent]
