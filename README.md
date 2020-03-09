@@ -5,3 +5,27 @@
 
 # spotify
 Angular and Node Spotify Cloud Application
+
+
+# Firebase Setup
+
+This assumes 
+
+```
+./node/credentials
+   databaseConfig.json
+   myproject-firebase-adminsdk.json
+
+```
+
+## Example `./node/credentials/databaseConfig.json`
+
+```
+{"databaseURL": "https://myproject.firebaseio.com",
+"emailtest":"mytest@bozo.com",
+"emailtestPassword":"SEcretPassword",
+"confirmedEmail":"confim@bozo.com",
+"confirmedEmailPassword":"SecretPasswrd2",
+"WebAPIKey":"AIazMyCJ23SxoTmWW4KnLoVzzZpBkf9Pq2_ab_g"}
+
+```
