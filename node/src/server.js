@@ -1,14 +1,15 @@
 const path = require("path");
 const http = require("http");
 const express = require("express");
+const bodyParser = require("body-parser");
 
 // CSRF
 const csrf = require("csurf");
 var cookieParser = require("cookie-parser");
 var csrfProtection = csrf({ cookie: true });
 
-
 const app = express();
+
 
 app.use(cookieParser());
 app.use(csrfProtection);
@@ -16,6 +17,8 @@ app.all("*", function (req, res, next) {
     res.cookie("XSRF-TOKEN", req.csrfToken());
     return next();
 });
+
+app.use(bodyParser.json());
 
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
@@ -25,7 +28,7 @@ app.post("/api/login", csrfProtection, function (req, res) {
     // For this example: login is always successful if the request passes the "csrfProtection" middleware
     // Set Access Token. Atuhentication, on this application, works with cookies:
     //  ** MAKE CALLS TO FIREBASE HERE ***
-    console.log("called login...");
+    console.log("called login...", req.body);
     res.cookie("AccessToken", "***Auth token value***", {
         httpOnly: true,
         expires: 0

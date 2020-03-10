@@ -51,6 +51,13 @@ jobs:
          npm install -g @angular/cli
 
 
+    # Credentials
+    - name: Get Credentials
+      run: |
+       mkdir -p ./node/credentials
+       gsutil cp gs://spotifypig/credentials/spotifypig-firebase-adminsdk.json ./node/credentials/spotifypig-firebase-adminsdk.json
+       gsutil cp gs://spotifypig/credentials/databaseConfig.json ./node/credentials/databaseConfig.json
+
 
     # Angular install and test
     - run: |
@@ -61,6 +68,9 @@ jobs:
       env:
         CI: true
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+
+
 
 
     # Node Make
