@@ -8,8 +8,14 @@ const csrf = require("csurf");
 var cookieParser = require("cookie-parser");
 var csrfProtection = csrf({ cookie: true });
 
-const app = express();
+// Firebase
+const {
+    signUp, signIn, sendVerifyEmail,
+    deleteAccount
+} = require("./firebase/utils");
 
+
+const app = express();
 
 app.use(cookieParser());
 app.use(csrfProtection);
@@ -23,6 +29,55 @@ app.use(bodyParser.json());
 const server = http.createServer(app);
 const port = process.env.PORT || 3000;
 const angularDirectoryPath = path.join(__dirname, "../dist");
+
+app.post("/api/signup", csrfProtection, function (req, res) {
+    signUp(req.body.email, req.body.password, data => {
+        res.cookie("AccessToken", data.idToken, {
+            httpOnly: true,
+            expires: 0
+        });
+        console.log('/api/signup: ', data);
+        res.set("Content-Type", "application/json");
+        res.json(data);
+        //  res.json({ idToken: data.idToken });
+    });
+});
+//sendVerifyEmail
+app.post("/api/sendverifyemail", csrfProtection, function (req, res) {
+    sendVerifyEmail(req.body.idToken, data => {
+        res.cookie("AccessToken", data.idToken, {
+            httpOnly: true,
+            expires: 0
+        });
+        console.log('/api/sendverifyemail: ', data);
+        res.set("Content-Type", "application/json");
+        res.json(data);
+        //  res.json({ idToken: data.idToken });
+    });
+});
+
+app.post("/api/signin", csrfProtection, function (req, res) {
+    signIn(req.body.email, req.body.password, data => {
+        res.cookie("AccessToken", data.idToken, {
+            httpOnly: true,
+            expires: 0
+        });
+        //console.log(data)
+        //res.json({ idToken: data.idToken });
+        res.json(data);
+    });
+});
+
+app.post("/api/delete/account", csrfProtection, function (req, res) {
+    deleteAccount(req.body.idToken, data => {
+        res.cookie("AccessToken", "***Auth token value***", {
+            httpOnly: true,
+            expires: 0
+        });
+        res.set("Content-Type", "application/json");
+        res.json(data);
+    });
+});
 
 app.post("/api/login", csrfProtection, function (req, res) {
     // For this example: login is always successful if the request passes the "csrfProtection" middleware

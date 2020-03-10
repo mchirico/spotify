@@ -1,89 +1,17 @@
 const { expect } = require("chai");
 
 const {
-    db, surburban, signUp,
+    signUp,
     deleteAccount, sendVerifyEmail, signIn, getByEmail, adminref, app
 } = require("../src/firebase/utils");
 
 const serviceAccount = require("../credentials/spotifypig-firebase-adminsdk.json");
 const databaseConfig = require("../credentials/databaseConfig.json");
 
-describe("Firebase Browser API", () => {
-
-    const addEntry = callback => {
-        if (typeof db !== "undefined") {
-            // tests setup
-            db.collection("users").
-                doc("y").
-                set({
-                    first: "What now okay done...",
-                    last: "Lovelace",
-                    born: 1815,
-                    msg: "Hello world"
-                }).
-                then(function (docRef) {
-                    console.log("Document written with ID: ", docRef.id);
-                    callback(docRef.id);
-                }).
-                catch(function (error) {
-                    console.error("Error adding document: ", error);
-                    callback(error);
-                });
-        } else {
-            this.skip();
-        }
-    };
-
-    before(function (done) {
-        this.timeout(4000);
-        setTimeout(done, 4000);
-        addEntry(result => {
-            console.log(result);
-            done();
-        });
-
-    });
-
-
-    it("Collection query", function (done) {
-
-        this.timeout(4000);
-        setTimeout(done, 4000);
-
-        function cleanup() {
-            db.collection("users").
-                doc("y").
-                delete().
-                then(function () {
-                    console.log("Document successfully deleted!");
-                }).
-                catch(function (error) {
-                    console.error("Error removing document: ", error);
-                });
-        }
-
-        db.collection("users").
-            where("born", "==", 1815).
-            get().
-            then(function (querySnapshot) {
-                querySnapshot.forEach(function (doc) {
-                    // doc.data() is never undefined for query doc snapshots
-                    console.log(doc.createTime, " => ", doc.data());
-                    cleanup();
-                    done();
-                });
-            }).
-            catch(function (error) {
-                console.log("Error getting documents: ", error);
-                done();
-            });
-    });
-
-
-});
 
 // Ref: https://firebase.google.com/docs/reference/rest/auth
-describe("Firebase REST API", () => {
+describe("Firebase REST API",function() {
+
     it("Can we read databaseConfig", function (done) {
 
         const databaseConfig = require("../credentials/databaseConfig.json");
@@ -105,8 +33,8 @@ describe("Firebase REST API", () => {
     });
 
     it("Firebase signUp and deleteAccount", function (done) {
+
         this.timeout(4000);
-        setTimeout(done, 4000);
 
         const databaseConfig = require("../credentials/databaseConfig.json");
         const email = databaseConfig.emailtest;
@@ -166,8 +94,6 @@ describe("Firebase REST API", () => {
 describe("Service Account Functions", () => {
     before(function (done) {
         this.timeout(4000);
-        setTimeout(done, 4000);
-
         if (!adminref.apps.length) {
             app = adminref.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
@@ -179,7 +105,6 @@ describe("Service Account Functions", () => {
 
     after(function (done) {
         this.timeout(4000);
-        setTimeout(done, 4000);
         app.delete().
             then(function () {
                 console.log("App deleted successfully");
