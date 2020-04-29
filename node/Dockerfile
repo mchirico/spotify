@@ -11,5 +11,6 @@ RUN npm test
 FROM node:current-alpine
 COPY --from=build /workspace /workspace
 WORKDIR /workspace
+RUN npm rebuild grpc
 ENTRYPOINT ["node"]
 CMD ["index.js"]
